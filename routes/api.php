@@ -25,14 +25,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/employees',          [EmployeeController::class, 'index']);
     Route::get('/employees/{id}',     [EmployeeController::class, 'show']);
     Route::post('/employees',         [EmployeeController::class, 'store']);
-    Route::put('/employees/{id}',     [EmployeeController::class, 'update']);    // EDIT
-    Route::delete('/employees/{id}',  [EmployeeController::class, 'destroy']);   // DELETE
+    Route::put('/employees/{id}',     [EmployeeController::class, 'update']);
+    Route::delete('/employees/{id}',  [EmployeeController::class, 'destroy']);
     Route::get('/departments',        [EmployeeController::class, 'departments']);
 
     // Leave Types
-    Route::get('/leave-types',       [LeaveTypeController::class, 'index']);
-    Route::post('/leave-types',      [LeaveTypeController::class, 'store']);
-    Route::put('/leave-types/{id}',  [LeaveTypeController::class, 'update']);
+    Route::get('/leave-types',          [LeaveTypeController::class, 'index']);
+    Route::post('/leave-types',         [LeaveTypeController::class, 'store']);
+    Route::put('/leave-types/{id}',     [LeaveTypeController::class, 'update']);
+    Route::delete('/leave-types/{id}',  [LeaveTypeController::class, 'destroy']);
 
     // Leave Requests
     Route::get('/leaves',              [LeaveRequestController::class, 'index']);

@@ -64,6 +64,9 @@ class LeaveTypeController extends Controller
         ], 201);
     }
 
+    /**
+     * PUT /api/leave-types/{id} — Update leave type (Admin only)
+     */
     public function update(Request $request, int $id): JsonResponse
     {
         if (! $request->user()->isAdmin()) {
@@ -73,17 +76,59 @@ class LeaveTypeController extends Controller
         $validated = $request->validate([
             'name'          => 'sometimes|string|max:100',
             'color'         => 'sometimes|string|max:10',
-            'annual_limit'  => 'sometimes|integer|min:0',
-            'carry_forward' => 'sometimes|integer|min:0',
-            'is_active'     => 'sometimes|boolean',
+            'annualLimit'   => 'sometimes|integer|min:0',
+            'carryForward'  => 'sometimes|integer|min:0',
         ]);
 
         $leaveType = LeaveType::findOrFail($id);
-        $leaveType->update($validated);
+
+        $updateData = [];
+        if (isset($validated['name'])) $updateData['name'] = $validated['name'];
+        if (isset($validated['color'])) $updateData['color'] = $validated['color'];
+        if (isset($validated['annualLimit'])) $updateData['annual_limit'] = $validated['annualLimit'];
+        if (isset($validated['carryForward'])) $updateData['carry_forward'] = $validated['carryForward'];
+
+        $leaveType->update($updateData);
 
         return response()->json([
             'success'   => true,
+            'message'   => 'Leave type updated successfully.',
             'leaveType' => $leaveType->toFrontendArray(),
+        ]);
+    }
+
+    /**
+     * DELETE /api/leave-types/{id} — Delete leave type (Admin only)
+     */
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        if (! $request->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $leaveType = LeaveType::findOrFail($id);
+
+        // Check if there are any approved/pending leave requests using this type
+        $activeRequests = $leaveType->leaveRequests()
+            ->whereIn('status', ['pending', 'approved'])
+            ->count();
+
+        if ($activeRequests > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => "Cannot delete: {$activeRequests} active leave request(s) use this type.",
+            ], 422);
+        }
+
+        // Delete related balances
+        $leaveType->leaveBalances()->delete();
+
+        // Delete the leave type
+        $leaveType->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Leave type deleted successfully.',
         ]);
     }
 }

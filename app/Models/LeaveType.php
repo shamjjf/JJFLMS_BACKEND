@@ -34,6 +34,7 @@ class LeaveType extends Model
     public function toFrontendArray(): array
     {
         return [
+            'dbId'         => $this->id,
             'id'           => $this->code,
             'name'         => $this->name,
             'color'        => $this->color,
